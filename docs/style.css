@@ -190,6 +190,51 @@ h1 {
   opacity: 1;
 }
 
+.cover-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 2;
+}
+
+.tile:hover .cover-actions,
+.tile:focus-within .cover-actions {
+  opacity: 1;
+}
+
+.cover-action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background 0.12s, transform 0.12s;
+}
+
+.cover-action-btn:hover {
+  background: rgba(0, 0, 0, 0.78);
+  transform: scale(1.08);
+}
+
+@media (hover: none) {
+  /* Touch devices: keep buttons subtly visible since hover doesn't fire */
+  .cover-actions { opacity: 0.85; }
+}
+
 .tile-name {
   margin-top: 12px;
   font-size: 14px;

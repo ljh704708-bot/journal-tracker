@@ -4,8 +4,12 @@
 const DEFAULTS_URL = "journals.json";
 const STORAGE_ADDED = "jt:added";
 const STORAGE_LAST_VISIT = "jt:lastVisit:";
+const STORAGE_COVERS = "jt:covers";
 const ARTICLES_PER_JOURNAL = 15;
 const ABSTRACT_MAX_CHARS = 600;
+const COVER_MAX_W = 600;
+const COVER_MAX_H = 800;
+const COVER_JPEG_QUALITY = 0.85;
 
 // Letter-mark cover palette
 const COVER_COLORS = [
@@ -45,6 +49,54 @@ function getLastVisit(issn) {
 
 function setLastVisit(issn) {
   localStorage.setItem(STORAGE_LAST_VISIT + issn, new Date().toISOString());
+}
+
+function loadCovers() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_COVERS) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function getCustomCover(issn) {
+  return loadCovers()[issn] || null;
+}
+
+function saveCustomCover(issn, dataUrl) {
+  const map = loadCovers();
+  map[issn] = dataUrl;
+  try {
+    localStorage.setItem(STORAGE_COVERS, JSON.stringify(map));
+    return true;
+  } catch (e) {
+    const msg = e.name === "QuotaExceededError"
+      ? "Storage is full. Try a smaller image, or remove some custom covers."
+      : `Could not save cover: ${e.message}`;
+    alert(msg);
+    return false;
+  }
+}
+
+function removeCustomCover(issn) {
+  const map = loadCovers();
+  delete map[issn];
+  localStorage.setItem(STORAGE_COVERS, JSON.stringify(map));
+}
+
+async function resizeImage(file, maxW = COVER_MAX_W, maxH = COVER_MAX_H, quality = COVER_JPEG_QUALITY) {
+  const bitmap = await createImageBitmap(file);
+  const ratio = Math.min(maxW / bitmap.width, maxH / bitmap.height, 1);
+  const w = Math.max(1, Math.round(bitmap.width * ratio));
+  const h = Math.max(1, Math.round(bitmap.height * ratio));
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#fff"; // flatten transparency for JPEG
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  return canvas.toDataURL("image/jpeg", quality);
 }
 
 async function loadJournals() {
@@ -210,24 +262,43 @@ async function initIndex() {
 }
 
 function renderTile(j) {
-  // Letter-mark always renders as placeholder/fallback. If a cover URL is
-  // provided, load it on top — fades in on success, removes itself on failure.
+  // Three layers: letter-mark background, cover image (default or custom), action buttons.
+  // Letter mark always renders as placeholder so failed images fall back to it.
   const cover = el("div", {
     class: "cover",
     style: `background:${hashColor(j.name)}`,
   }, el("span", { class: "cover-letters" }, initials(j.name) || "?"));
 
-  if (j.cover) {
-    const img = document.createElement("img");
-    img.className = "cover-img";
-    img.alt = "";
-    img.loading = "lazy";
-    img.referrerPolicy = "no-referrer";
-    img.onload = () => img.classList.add("loaded");
-    img.onerror = () => img.remove();
-    img.src = j.cover;
-    cover.appendChild(img);
+  attachCoverImage(cover, j);
+
+  // Action buttons (overlaid on the cover)
+  const actions = el("div", { class: "cover-actions" });
+  const editBtn = el("button", {
+    class: "cover-action-btn",
+    title: "Change cover",
+    "aria-label": "Change cover",
+    onclick: (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      pickCoverFor(j);
+    },
+  }, "📷");
+  actions.appendChild(editBtn);
+
+  if (getCustomCover(j.issn)) {
+    const resetBtn = el("button", {
+      class: "cover-action-btn",
+      title: "Reset to default cover",
+      "aria-label": "Reset to default cover",
+      onclick: (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        resetCoverFor(j);
+      },
+    }, "↺");
+    actions.appendChild(resetBtn);
   }
+  cover.appendChild(actions);
 
   const name = el("div", { class: "tile-name" }, j.name);
   const badge = el("div", {
@@ -238,6 +309,60 @@ function renderTile(j) {
     href: `journal.html?issn=${encodeURIComponent(j.issn)}`,
     dataset: { issn: j.issn },
   }, cover, name, badge);
+}
+
+function attachCoverImage(coverEl, j) {
+  // Remove any existing image first (used during in-place updates)
+  coverEl.querySelectorAll(".cover-img").forEach((n) => n.remove());
+
+  const src = getCustomCover(j.issn) || j.cover;
+  if (!src) return;
+
+  const img = document.createElement("img");
+  img.className = "cover-img";
+  img.alt = "";
+  img.loading = "lazy";
+  img.referrerPolicy = "no-referrer";
+  img.onload = () => img.classList.add("loaded");
+  img.onerror = () => img.remove();
+  img.src = src;
+  coverEl.appendChild(img);
+}
+
+function pickCoverFor(j) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.style.display = "none";
+  input.addEventListener("change", async () => {
+    const file = input.files?.[0];
+    input.remove();
+    if (!file) return;
+    let dataUrl;
+    try {
+      dataUrl = await resizeImage(file);
+    } catch (e) {
+      alert(`Couldn't process that image: ${e.message}`);
+      return;
+    }
+    if (!saveCustomCover(j.issn, dataUrl)) return;
+    refreshTile(j);
+  });
+  document.body.appendChild(input);
+  input.click();
+}
+
+function resetCoverFor(j) {
+  if (!confirm(`Reset cover for "${j.name}" to the default?`)) return;
+  removeCustomCover(j.issn);
+  refreshTile(j);
+}
+
+function refreshTile(j) {
+  const oldTile = document.querySelector(`.tile[data-issn="${CSS.escape(j.issn)}"]`);
+  if (!oldTile) return;
+  const newTile = renderTile(j);
+  oldTile.replaceWith(newTile);
 }
 
 async function updateNewBadge(j) {
