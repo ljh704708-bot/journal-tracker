@@ -176,6 +176,20 @@ h1 {
   font-family: Georgia, "Times New Roman", serif;
 }
 
+.cover-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+}
+
+.cover-img.loaded {
+  opacity: 1;
+}
+
 .tile-name {
   margin-top: 12px;
   font-size: 14px;

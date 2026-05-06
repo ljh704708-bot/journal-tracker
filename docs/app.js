@@ -210,8 +210,25 @@ async function initIndex() {
 }
 
 function renderTile(j) {
-  const cover = el("div", { class: "cover", style: `background:${hashColor(j.name)}` },
-    el("span", { class: "cover-letters" }, initials(j.name) || "?"));
+  // Letter-mark always renders as placeholder/fallback. If a cover URL is
+  // provided, load it on top — fades in on success, removes itself on failure.
+  const cover = el("div", {
+    class: "cover",
+    style: `background:${hashColor(j.name)}`,
+  }, el("span", { class: "cover-letters" }, initials(j.name) || "?"));
+
+  if (j.cover) {
+    const img = document.createElement("img");
+    img.className = "cover-img";
+    img.alt = "";
+    img.loading = "lazy";
+    img.referrerPolicy = "no-referrer";
+    img.onload = () => img.classList.add("loaded");
+    img.onerror = () => img.remove();
+    img.src = j.cover;
+    cover.appendChild(img);
+  }
+
   const name = el("div", { class: "tile-name" }, j.name);
   const badge = el("div", {
     class: "tile-badge", hidden: true, dataset: { issn: j.issn },
