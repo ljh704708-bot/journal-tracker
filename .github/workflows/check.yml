@@ -1,0 +1,59 @@
+name: Check for new journal articles
+
+on:
+  schedule:
+    # 22:00 UTC = 06:00 next day Beijing time. Adjust if you want different timing.
+    - cron: '0 22 * * *'
+  workflow_dispatch:  # also allow manual run from the Actions tab
+
+permissions:
+  contents: write   # to commit updated .last-seen.json
+  issues: write     # to open issues
+
+concurrency:
+  group: check-articles
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check for new articles
+        id: check
+        run: python3 scripts/check_new.py
+
+      - name: Commit updated state file
+        run: |
+          if ! git diff --quiet .last-seen.json 2>/dev/null; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .last-seen.json
+            git commit -m "chore: update .last-seen.json [skip ci]"
+            git push
+          else
+            echo "No changes to .last-seen.json"
+          fi
+
+      - name: Open issue for new articles
+        if: steps.check.outputs.new_count != '' && steps.check.outputs.new_count != '0'
+        uses: actions/github-script@v7
+        env:
+          NEW_COUNT: ${{ steps.check.outputs.new_count }}
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('new_articles.md', 'utf8');
+            const date = new Date().toISOString().slice(0, 10);
+            const count = process.env.NEW_COUNT;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `${count} new article${count === '1' ? '' : 's'} · ${date}`,
+              body: body,
+            });
