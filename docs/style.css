@@ -139,8 +139,8 @@ h1 {
 /* Index grid */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 16px;
 }
 
 .tile {
@@ -169,7 +169,7 @@ h1 {
 
 .cover-letters {
   color: white;
-  font-size: 44px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.02em;
   text-shadow: 0 2px 8px rgba(0,0,0,0.15);
@@ -192,10 +192,10 @@ h1 {
 
 .cover-actions {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 4px;
+  right: 4px;
   display: flex;
-  gap: 4px;
+  gap: 3px;
   opacity: 0;
   transition: opacity 0.15s;
   z-index: 2;
@@ -207,13 +207,14 @@ h1 {
 }
 
 .cover-action-btn {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   border: none;
   background: rgba(0, 0, 0, 0.55);
   color: white;
   font-size: 14px;
+  font-weight: 400;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -236,25 +237,29 @@ h1 {
 }
 
 .tile-name {
-  margin-top: 12px;
-  font-size: 14px;
+  margin-top: 8px;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.35;
   color: var(--fg);
   letter-spacing: -0.005em;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .tile-badge {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 4px;
+  left: 4px;
   background: var(--new-bg);
   color: var(--new-fg);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  padding: 3px 7px;
-  border-radius: 4px;
+  letter-spacing: 0.06em;
+  padding: 2px 5px;
+  border-radius: 3px;
 }
 
 .empty-state, .loading-state {
@@ -473,9 +478,9 @@ footer a { color: var(--accent); }
   header, main, footer { padding: 0 16px; }
   header { padding-top: 24px; }
   h1 { font-size: 24px; }
-  .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; }
-  .cover-letters { font-size: 32px; }
-  .tile-name { font-size: 13px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 12px; }
+  .cover-letters { font-size: 16px; }
+  .tile-name { font-size: 11px; }
   .header-row { flex-direction: column; align-items: stretch; gap: 12px; }
   .primary-btn { width: 100%; }
   .card { padding: 14px 16px; }

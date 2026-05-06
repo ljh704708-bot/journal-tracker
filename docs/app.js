@@ -282,7 +282,7 @@ function renderTile(j) {
       e.stopPropagation();
       pickCoverFor(j);
     },
-  }, "📷");
+  }, "+");
   actions.appendChild(editBtn);
 
   if (getCustomCover(j.issn)) {
