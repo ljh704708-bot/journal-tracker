@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Journal Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-journal">
+  <header>
+    <a href="index.html" class="back-link">← All journals</a>
+    <div class="header-row">
+      <div>
+        <h1 id="journal-name">Loading…</h1>
+        <p class="subtitle">
+          <a id="journal-homepage" href="#" target="_blank" rel="noopener">Visit publisher site</a>
+        </p>
+      </div>
+      <button id="remove-btn" class="ghost-btn" hidden>Remove</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="articles" class="cards"></div>
+    <p id="loading" class="loading-state">Loading articles…</p>
+  </main>
+
+  <footer>
+    <p>Data via <a href="https://www.crossref.org/" target="_blank" rel="noopener">Crossref</a>
+       and <a href="https://openalex.org/" target="_blank" rel="noopener">OpenAlex</a>.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

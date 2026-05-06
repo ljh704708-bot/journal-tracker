@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Journal Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-index">
+  <header>
+    <div class="header-row">
+      <div>
+        <h1>Journal Tracker</h1>
+        <p class="subtitle">Pick a journal to see the latest articles</p>
+      </div>
+      <button id="add-btn" class="primary-btn">+ Add Journal</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="grid" class="grid"></div>
+    <p id="empty-state" class="empty-state" hidden>
+      No journals yet. Click <strong>+ Add Journal</strong> to start tracking one.
+    </p>
+  </main>
+
+  <footer>
+    <p>Data via <a href="https://www.crossref.org/" target="_blank" rel="noopener">Crossref</a>
+       and <a href="https://openalex.org/" target="_blank" rel="noopener">OpenAlex</a>.</p>
+  </footer>
+
+  <!-- Add modal -->
+  <div id="add-modal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h2>Add a journal</h2>
+        <button id="close-modal" class="icon-btn" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input id="search-input" type="search" placeholder="Search by name or paste an ISSN…" autocomplete="off">
+        <div id="search-results" class="search-results"></div>
+        <p class="modal-hint">Searches the Crossref journal index. Found one? Click <strong>Add</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
